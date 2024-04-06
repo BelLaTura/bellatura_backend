@@ -1,0 +1,1 @@
+npx @nestjs/cli new ref-system-backend --directory ./ --package-manager yarn --language TypeScript
