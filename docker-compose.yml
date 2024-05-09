@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+
+  db:
+    restart: always
+    image: mysql:8.0
+    volumes:
+      - ./docker/backend/mysql/var/lib/mysql:/var/lib/mysql
+    ports:
+      - ${DB_PORT}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+
+  phpmyadmin:
+    restart: always
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 11112:80
+    environment:
+      PMA_HOST: db
+      #PMA_PORT: 3306
+      #PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 1000M
