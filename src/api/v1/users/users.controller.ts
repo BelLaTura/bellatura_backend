@@ -39,9 +39,11 @@ export class UsersController {
     status: 404,
     type: AppResponseDto,
   })
+  @ApiBearerAuth('access-token')
+  @UseGuards(VerifyAccessTokenGuard)
   @Get()
-  findAll(@Res() res, @Query() query: GetUserTreeQuery) {
-    return this.usersService.findAll(res, query);
+  findAll(@Res() res, @Query() query: GetUserTreeQuery, @Req() req) {
+    return this.usersService.findAll(res, query, req);
   }
 
   @ApiResponse({

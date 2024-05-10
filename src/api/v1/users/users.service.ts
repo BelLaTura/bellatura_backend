@@ -64,6 +64,7 @@ export class UsersService {
         .save({
           ...dto,
           rs_id: 0,
+          rs_ref: ref,
           rs_passwordHash: HASH_PASSWORD,
           rs_isActivated: false,
         });
@@ -110,32 +111,58 @@ export class UsersService {
     }
   }
 
-  async findAll(res: Response, query: GetUserTreeQuery) {
+  async findAll(res: Response, query: GetUserTreeQuery, req: AppRequestDto) {
     const ref = query.id || 0;
     const generations = query.generations <= 0 ? 1 : query.generations;
 
     const main = await this.RsCtlUsersRepository.findOneOrFail({
+      select: {
+        rs_middlename: true,
+        rs_name: true,
+        rs_surname: true,
+        rs_id: true,
+        rs_ref: true,
+        rs_address: true,
+        rs_birthday: true,
+        rs_email: true,
+        rs_phone: true,
+        rs_telegramNickname: true,
+        rs_isActivated: false,
+        rs_login: false,
+        rs_passwordHash: false,
+      },
       where: {
         rs_id: ref,
       },
     });
 
-    let arr = [this.getPublicUser(main)];
+    let arr = [main];
 
     let findRef: number[] = [ref];
 
     for (let i = 0; i < generations; ++i) {
       const candidates = await this.RsCtlUsersRepository.find({
+        select: {
+          rs_middlename: true,
+          rs_name: true,
+          rs_surname: true,
+          rs_id: true,
+          rs_ref: true,
+          rs_address: true,
+          rs_birthday: true,
+          rs_email: true,
+          rs_phone: true,
+          rs_telegramNickname: true,
+          rs_isActivated: false,
+          rs_login: false,
+          rs_passwordHash: false,
+        },
         where: {
           rs_ref: In(findRef),
         },
       });
 
-      const publicCandidates = candidates.map((e) => {
-        return this.getPublicUser(e);
-      });
-
-      if (publicCandidates.length === 0) {
+      if (candidates.length === 0) {
         break;
       }
 
@@ -143,7 +170,7 @@ export class UsersService {
         return e.rs_id;
       });
 
-      arr = [...arr, ...publicCandidates];
+      arr = [...arr, ...candidates];
     }
 
     const json = GetResponse.getOkResponse('Массив пользователей получен', arr);
@@ -224,16 +251,23 @@ export class UsersService {
         rs_surname: true,
         rs_id: true,
         rs_ref: true,
+        rs_address: true,
+        rs_birthday: true,
+        rs_email: true,
+        rs_phone: true,
+        rs_telegramNickname: true,
+        rs_isActivated: false,
+        rs_login: false,
+        rs_passwordHash: false,
       },
       where: {
         rs_id: id,
       },
     });
 
-    const publicUser = this.getPublicUser(candidate);
     const json = GetResponse.getOkResponse(
       'Получили пользователя по id',
-      publicUser,
+      candidate,
     );
 
     return res.status(json.statusCode).send(json);
