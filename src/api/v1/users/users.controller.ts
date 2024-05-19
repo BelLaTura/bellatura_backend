@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -16,6 +17,7 @@ import {
   GetUserByIdResponseDto,
   GetUserResponseDto,
   GetUserTreeQuery,
+  PatchUserDto,
 } from './users.dto';
 import { AppResponseDto } from 'src/types/app-response.dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -85,5 +87,12 @@ export class UsersController {
   @Post('forget-password')
   forgetPassword(@Res() res, @Body() body: ForgetPasswordBodyDto) {
     return this.usersService.forgetPassword(res, body);
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(VerifyAccessTokenGuard)
+  @Patch()
+  patchUser(@Res() res, @Body() body: PatchUserDto, @Req() req) {
+    return this.usersService.patchUser(res, body, req);
   }
 }

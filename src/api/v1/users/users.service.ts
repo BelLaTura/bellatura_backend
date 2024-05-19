@@ -8,6 +8,7 @@ import {
   CreateUserDto,
   ForgetPasswordBodyDto,
   GetUserTreeQuery,
+  PatchUserDto,
   PublicUserDto,
 } from './users.dto';
 import { TokenTypes } from 'src/types/token-payload.dto';
@@ -32,6 +33,8 @@ export class UsersService {
   ) {}
 
   async create(res: Response, dto: CreateUserDto) {
+    console.log(' < < < < < < < < РЕГИСТРАЦИЯ');
+    console.log(' - - - - - - - - Поиск кандидата по email');
     const EMAIL_CANDIDATE = await this.RsCtlUsersRepository.findOne({
       where: { rs_email: dto.rs_email },
     });
@@ -41,15 +44,29 @@ export class UsersService {
       return res.status(HttpStatus.CONFLICT).send(response);
     }
 
+    console.log(' - - - - - - - - Поиск кандидата по логину');
+    const LOGIN_CANDIDATE = await this.RsCtlUsersRepository.findOne({
+      where: { rs_login: dto.rs_login },
+    });
+
+    if (LOGIN_CANDIDATE) {
+      const response = GetResponse.getConflictResponse('Логин уже занят', {});
+      return res.status(HttpStatus.CONFLICT).send(response);
+    }
+
+    console.log(' - - - - - - - - старт транзакции');
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+      console.log(' - - - - - - - - создание хэша пароля')
       const PASSWORD = dto.rs_password;
       const HASH_PASSWORD = await bcrypt.hash(PASSWORD, SALT);
 
+      console.log(' - - - - - - - - поиск реферала')
       let ref: number = 0;
-      const REF_CANDIDATE = await this.RsCtlUsersRepository.findOne({
+      const REF_CANDIDATE = await queryRunner.manager
+      .getRepository(RS_CTL_Users).findOne({
         where: {
           rs_id: dto.rs_ref,
         },
@@ -59,6 +76,7 @@ export class UsersService {
         ref = REF_CANDIDATE.rs_id;
       }
 
+      console.log(' - - - - - - - - создание пользователя')
       const userData = await queryRunner.manager
         .getRepository(RS_CTL_Users)
         .save({
@@ -76,6 +94,7 @@ export class UsersService {
         TokenTypes.activationToken,
       );
 
+      console.log(' - - - - - - - - создание токена активации')
       await queryRunner.manager.getRepository(RS_DOC_ActivationAccount).save({
         rs_token: activationToken,
         rs_userId: userId,
@@ -91,16 +110,20 @@ export class UsersService {
         },
       };
 
+      console.log(` - - - - - - - - отправка почты на ${email}`)
       await this.mailerService.sendMail(sendMailOptions);
+      console.log(' - - - - - - - - конец отправки')
 
       const response = GetResponse.getOkResponse(
         'Пользователь зарегистрирован',
         {},
       );
       await queryRunner.commitTransaction();
+      console.log(' > > > > > > > > КОНЕЦ РЕГИСТРАЦИИ')
       return res.status(response.statusCode).send(response);
     } catch (exception) {
       await queryRunner.rollbackTransaction();
+      console.log(` ! ! ! ! ! ! ! ! Регистрация не выполнена: ${exception}`)
       const response = GetResponse.getConflictResponse(
         'Транзакция не выполнена: ' + exception,
         {
@@ -178,49 +201,54 @@ export class UsersService {
   }
 
   async activateAccount(res: Response, activationToken) {
-    let userId = 0;
-    try {
-      const payload = await this.sessionService.verifyToken(
-        activationToken,
-        TokenTypes.activationToken,
-      );
-      userId = payload.id;
-    } catch (err) {
-      if (err.name === 'TokenExpiredError') {
-        const message = `Ссылка не действительна, так как прошло 24 часа err=(${err})`;
-        const response = GetResponse.getNotFoundResponse(message, {
-          exception: '' + err,
-        });
-        return res.status(response.statusCode).send(response);
-      }
-      const message = `Ссылка не действительна, так как токен подделан err=(${err})`;
-      const response = GetResponse.getNotFoundResponse(message, {
-        exception: '' + err,
-      });
-      return res.status(response.statusCode).send(response);
-    }
+    // let userId = 0;
+    // try {
+    //   const payload = await this.sessionService.verifyToken(
+    //     activationToken,
+    //     TokenTypes.activationToken,
+    //   );
+    //   userId = payload.id;
+    // } catch (err) {
+    //   if (err.name === 'TokenExpiredError') {
+    //     const message = `Ссылка не действительна, так как прошло 24 часа err=(${err})`;
+    //     const response = GetResponse.getNotFoundResponse(message, {
+    //       exception: '' + err,
+    //     });
+    //     return res.status(response.statusCode).send(response);
+    //   }
+    //   const message = `Ссылка не действительна, так как токен подделан err=(${err})`;
+    //   const response = GetResponse.getNotFoundResponse(message, {
+    //     exception: '' + err,
+    //   });
+    //   return res.status(response.statusCode).send(response);
+    // }
 
+    console.log(' < < < < < < < < АКТИВАЦИЯ АККАУНТА')
+    console.log(' - - - - - - - - поиск записи активации аккаунта по токену')
     const candidate = await this.RsDocActivationAccountRepository.findOne({
       where: {
-        rs_userId: userId,
         rs_token: activationToken,
       },
     });
 
+
     if (!candidate) {
+      console.log(' ! ! ! ! ! ! ! ! ТОКЕНА АКТИВАЦИИ НЕТ В БД')
       const message =
         'Ссылка не действительная, так как такой токен не зарегстрирован в БД';
       const response = GetResponse.getNotFoundResponse(message, {});
       return res.status(response.statusCode).send(response);
     }
 
+    console.log(' - - - - - - - - поиск пользователя по id')
     const userCandidate = await this.RsCtlUsersRepository.findOne({
       where: {
-        rs_id: userId,
+        rs_id: candidate.rs_userId,
       },
     });
 
     if (!userCandidate) {
+      console.log(' ! ! ! ! ! ! ! ! НЕТ ПОЛЬЗОВАТЕЛЯ БД')
       const response = GetResponse.getConflictResponse(
         'Пользователь не найден в БД',
         {},
@@ -229,18 +257,25 @@ export class UsersService {
     }
 
     if (userCandidate.rs_isActivated) {
-      const response = GetResponse.getConflictResponse(
-        'Аккаунт уже был активирован.',
-        {},
-      );
-      return res.status(response.statusCode).send(response);
+      console.log(' ! ! ! ! ! ! ! ! аккаунт уже был активирован :)')
+      const response = GetResponse.getConflictResponse('', {}); 
+      const html =
+        '<p style="font-size: 3em;">Аккаунт уже был активирован</p>' +
+        '<p><a style="font-size: 2em;" href="https://bellatura.by/account">Вернуться на сайт</a></p>';
+      return res.status(response.statusCode).send(html);
     }
 
-    await this.RsCtlUsersRepository.update(userId, {
+    console.log(' - - - - - - - - установка флага, что аккаунт активирован');
+    await this.RsCtlUsersRepository.update(candidate.rs_userId, {
       rs_isActivated: true,
     });
 
-    return res.status(200).send('<p>Аккаунт активирован</p>');
+    console.log(' > > > > > > > > КОНЕЦ АКТИВАЦИИ АККАУНТА')
+    const response = GetResponse.getOkResponse('', {}); 
+      const html =
+        '<p style="font-size: 3em;">Аккаунт активирован</p>' +
+        '<p><a style="font-size: 2em;" href="https://bellatura.by/account">Вернуться на сайт</a></p>';
+    return res.status(response.statusCode).send(html);
   }
 
   async findOne(res: Response, id: number) {
@@ -390,5 +425,14 @@ export class UsersService {
       rs_ref: UserEntity.rs_ref,
     };
     return publicUser;
+  }
+
+  async patchUser(res: Response, dto: PatchUserDto, req: AppRequestDto) {
+    const userId = req.custom__userId;
+    await this.RsCtlUsersRepository.update(userId, {
+      rs_telegramNickname: dto.rs_telegramNickname
+    })
+    const json = GetResponse.getOkResponse('Обновление произошло успешно', {});
+    return res.status(json.statusCode).send(json);
   }
 }

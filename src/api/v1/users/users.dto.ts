@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
@@ -93,4 +94,47 @@ export class GetUserByIdResponseDto extends AppResponseDto {
 
 export class ForgetPasswordBodyDto {
   rs_loginOrEmail: string;
+}
+
+export class PatchUserDto {
+  @Exclude()
+  rs_id: number;
+
+  @Exclude()
+  rs_ref: number;
+
+  @Exclude()
+  rs_email: string;
+
+  @Exclude()
+  rs_login: string;
+
+  @Exclude()
+  rs_surname: string;
+
+  @Exclude()
+  rs_name: string;
+
+  @Exclude()
+  rs_middlename: string;
+
+  @Exclude()
+  rs_password: string;
+
+  @Exclude()
+  rs_birthday: string;
+
+  @Exclude()
+  rs_phone: string;
+
+  @Exclude()
+  rs_address: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ example: '' })
+  rs_telegramNickname: string;
+
+  @Exclude()
+  rs_isActivated: boolean;
 }
