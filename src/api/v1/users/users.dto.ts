@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { AppResponseDto } from 'src/types/app-response.dto';
 
-export class CreateUserDto {
+export class QueryCreateUserDto {
   @IsNumber()
   @ApiProperty({ example: 1 })
   rs_ref: number;
@@ -60,43 +60,186 @@ export class CreateUserDto {
   @ApiProperty({ example: '' })
   rs_telegramNickname: string;
 
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ example: '' })
+  rs_viberPhone: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ example: '' })
+  rs_whatsappPhone: string;
+
   rs_isActivated: boolean;
 }
 
-export class GetUserTreeQuery {
+export class QueryGetUserDto {
   @ApiProperty({ example: 5 })
   generations: number;
-
-  @ApiProperty({ example: 1 })
-  id: number;
 }
 
-export class PublicUserDto {
+export class ResponseDataGetUserDto {
+  @ApiProperty()
+  rs_middlename: string;
+
+  @ApiProperty()
+  rs_name: string;
+
+  @ApiProperty()
+  rs_surname: string;
+
   @ApiProperty()
   rs_id: number;
 
   @ApiProperty()
-  rs_initials_name: string;
+  rs_ref: string;
 
   @ApiProperty()
-  rs_ref: number;
+  rs_address: string;
+
+  @ApiProperty()
+  rs_birthday: string;
+
+  @ApiProperty()
+  rs_email: string;
+
+  @ApiProperty()
+  rs_phone: string;
+
+  @ApiProperty()
+  rs_telegramNickname: string;
+
+  @ApiProperty()
+  rs_viberPhone: string;
+
+  @ApiProperty()
+  rs_whatsappPhone: string;
+
+  @ApiProperty()
+  rs_isActivated: boolean;
+
+  @Exclude()
+  rs_login: string;
+
+  @Exclude()
+  rs_passwordHash: string;
 }
 
-export class GetUserResponseDto extends AppResponseDto {
-  @ApiProperty({ type: [PublicUserDto] })
-  data: PublicUserDto[];
+export class ResponseGetUserDto extends AppResponseDto {
+  @ApiProperty({ type: ResponseDataGetUserDto })
+  data: ResponseDataGetUserDto;
 }
 
-export class GetUserByIdResponseDto extends AppResponseDto {
-  @ApiProperty({ type: PublicUserDto })
-  data: PublicUserDto;
+export class ResponseDataGetUserByIdDto {
+  @ApiProperty()
+  rs_middlename: string;
+
+  @ApiProperty()
+  rs_name: string;
+
+  @ApiProperty()
+  rs_surname: string;
+
+  @ApiProperty()
+  rs_id: number;
+
+  @ApiProperty()
+  rs_ref: string;
+
+  @ApiProperty()
+  rs_address: string;
+
+  @ApiProperty()
+  rs_birthday: string;
+
+  @ApiProperty()
+  rs_email: string;
+
+  @ApiProperty()
+  rs_phone: string;
+
+  @ApiProperty()
+  rs_telegramNickname: string;
+
+  @ApiProperty()
+  rs_viberPhone: string;
+
+  @ApiProperty()
+  rs_whatsappPhone: string;
+
+  @ApiProperty()
+  rs_isActivated: boolean;
+
+  @Exclude()
+  rs_login: string;
+
+  @Exclude()
+  rs_passwordHash: string;
 }
 
-export class ForgetPasswordBodyDto {
+export class ResponseGetUserByIdDto extends AppResponseDto {
+  @ApiProperty({ type: ResponseDataGetUserByIdDto })
+  data: ResponseDataGetUserByIdDto;
+}
+
+export class ResponseDataGetUserMyDataDto {
+  @ApiProperty()
+  rs_middlename: string;
+
+  @ApiProperty()
+  rs_name: string;
+
+  @ApiProperty()
+  rs_surname: string;
+
+  @ApiProperty()
+  rs_id: number;
+
+  @ApiProperty()
+  rs_ref: string;
+
+  @ApiProperty()
+  rs_address: string;
+
+  @ApiProperty()
+  rs_birthday: string;
+
+  @ApiProperty()
+  rs_email: string;
+
+  @ApiProperty()
+  rs_phone: string;
+
+  @ApiProperty()
+  rs_telegramNickname: string;
+
+  @ApiProperty()
+  rs_viberPhone: string;
+
+  @ApiProperty()
+  rs_whatsappPhone: string;
+
+  @ApiProperty()
+  rs_isActivated: boolean;
+
+  @Exclude()
+  rs_login: string;
+
+  @Exclude()
+  rs_passwordHash: string;
+}
+
+export class ResponseGetUserMyDataDto extends AppResponseDto {
+  @ApiProperty({ type: ResponseDataGetUserByIdDto })
+  data: ResponseDataGetUserByIdDto;
+}
+
+export class QueryUserForgetPasswordDto {
+  @ApiProperty()
   rs_loginOrEmail: string;
 }
 
-export class PatchUserDto {
+export class QueryPatchUserDto {
   @Exclude()
   rs_id: number;
 
@@ -135,6 +278,19 @@ export class PatchUserDto {
   @ApiProperty({ example: '' })
   rs_telegramNickname: string;
 
+  @IsOptional()
+  @ApiProperty({ example: '' })
+  rs_viberPhone: string;
+
+  @IsOptional()
+  @ApiProperty({ example: '' })
+  rs_whatsappPhone: string;
+
   @Exclude()
   rs_isActivated: boolean;
+}
+
+export class QueryUserChangePasswordDto {
+  @ApiProperty()
+  rs_password: string;
 }

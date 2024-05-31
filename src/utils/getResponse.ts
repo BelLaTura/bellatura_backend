@@ -1,8 +1,8 @@
-import { ResponseDto } from 'src/types/response.dto';
+import { AppResponseDto } from 'src/types/app-response.dto';
 
 export default class GetResponse {
   static getOkResponse(message: string, data: any) {
-    const response: ResponseDto = {
+    const response: AppResponseDto = {
       statusCode: 200,
       status: 'OK',
       message,
@@ -12,7 +12,7 @@ export default class GetResponse {
   }
 
   static getCreatedResponse(message: string, data: any) {
-    const response: ResponseDto = {
+    const response: AppResponseDto = {
       statusCode: 201,
       status: 'CREATED',
       message,
@@ -22,7 +22,7 @@ export default class GetResponse {
   }
 
   static getBadRequestResponse(message: string, data: any) {
-    const response: ResponseDto = {
+    const response: AppResponseDto = {
       statusCode: 400,
       status: 'BAD REQUEST',
       message,
@@ -32,7 +32,7 @@ export default class GetResponse {
   }
 
   static getUnauthorizedResponse(message: string, data: any) {
-    const response: ResponseDto = {
+    const response: AppResponseDto = {
       statusCode: 401,
       status: 'UNAUTHORIZED',
       message,
@@ -42,7 +42,7 @@ export default class GetResponse {
   }
 
   static getNotFoundResponse(message: string, data: any) {
-    const response: ResponseDto = {
+    const response: AppResponseDto = {
       statusCode: 404,
       status: 'NOT FOUND',
       message,
@@ -52,7 +52,7 @@ export default class GetResponse {
   }
 
   static getConflictResponse(message: string, data: any) {
-    const response: ResponseDto = {
+    const response: AppResponseDto = {
       statusCode: 409,
       status: 'CONFLICT',
       message,

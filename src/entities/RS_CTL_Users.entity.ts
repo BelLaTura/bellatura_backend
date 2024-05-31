@@ -40,6 +40,15 @@ export default class RS_CTL_Users {
   @Column({ length: 64, default: '' })
   rs_telegramNickname: string;
 
+  @Column({ length: 13, default: '' })
+  rs_viberPhone: string;
+
+  @Column({ length: 13, default: '' })
+  rs_whatsappPhone: string;
+
   @Column({ default: 0 })
   rs_isActivated: boolean;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  rs_createdAt: string;
 }

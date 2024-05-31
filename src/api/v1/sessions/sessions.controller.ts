@@ -29,6 +29,13 @@ export class SessionsController {
 
   @ApiBearerAuth('access-token')
   @UseGuards(VerifyAccessTokenGuard)
+  @Post('x/is-verify')
+  isVerify(@Res() res) {
+    return this.sessionsService.isVerify(res);
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(VerifyAccessTokenGuard)
   @Get()
   findAll(@Req() req, @Res() res: Response) {
     return this.sessionsService.findAll(req, res);

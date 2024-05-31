@@ -12,12 +12,14 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
-  CreateUserDto,
-  ForgetPasswordBodyDto,
-  GetUserByIdResponseDto,
-  GetUserResponseDto,
-  GetUserTreeQuery,
-  PatchUserDto,
+  QueryCreateUserDto,
+  QueryUserForgetPasswordDto,
+  ResponseGetUserByIdDto,
+  ResponseGetUserMyDataDto,
+  QueryGetUserDto,
+  QueryPatchUserDto,
+  ResponseGetUserDto,
+  QueryUserChangePasswordDto,
 } from './users.dto';
 import { AppResponseDto } from 'src/types/app-response.dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -28,14 +30,26 @@ import { VerifyAccessTokenGuard } from 'src/guards/verify-access-token.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiResponse({
+    status: 200,
+    type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    type: AppResponseDto,
+  })
   @Post()
-  create(@Res() res, @Body() dto: CreateUserDto) {
+  create(@Res() res, @Body() dto: QueryCreateUserDto) {
     return this.usersService.create(res, dto);
   }
 
   @ApiResponse({
     status: 200,
-    type: GetUserResponseDto,
+    type: ResponseGetUserDto,
+  })
+  @ApiResponse({
+    status: 401,
+    type: AppResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -44,13 +58,13 @@ export class UsersController {
   @ApiBearerAuth('access-token')
   @UseGuards(VerifyAccessTokenGuard)
   @Get()
-  findAll(@Res() res, @Query() query: GetUserTreeQuery, @Req() req) {
+  findAll(@Res() res, @Query() query: QueryGetUserDto, @Req() req) {
     return this.usersService.findAll(res, query, req);
   }
 
   @ApiResponse({
     status: 200,
-    type: GetUserByIdResponseDto,
+    type: ResponseGetUserByIdDto,
   })
   @ApiResponse({
     status: 404,
@@ -63,11 +77,15 @@ export class UsersController {
 
   @ApiResponse({
     status: 200,
-    type: GetUserByIdResponseDto,
+    type: String,
   })
   @ApiResponse({
     status: 404,
     type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    type: String,
   })
   @Get('x/activate-account/:activationToken')
   activateAccount(
@@ -77,6 +95,33 @@ export class UsersController {
     return this.usersService.activateAccount(res, activationToken);
   }
 
+  @ApiResponse({
+    status: 200,
+    type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    type: AppResponseDto,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(VerifyAccessTokenGuard)
+  @Post('x/activate-account')
+  getNewActivationAccount(@Res() res, @Req() req) {
+    return this.usersService.getNewActivationAccout(res, req);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: ResponseGetUserMyDataDto,
+  })
+  @ApiResponse({
+    status: 401,
+    type: AppResponseDto,
+  })
   @ApiBearerAuth('access-token')
   @UseGuards(VerifyAccessTokenGuard)
   @Get('x/my-data')
@@ -84,15 +129,48 @@ export class UsersController {
     return this.usersService.findMyData(res, req);
   }
 
-  @Post('forget-password')
-  forgetPassword(@Res() res, @Body() body: ForgetPasswordBodyDto) {
+  @ApiResponse({
+    status: 200,
+    type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    type: AppResponseDto,
+  })
+  @Post('x/forget-password')
+  forgetPassword(@Res() res, @Body() body: QueryUserForgetPasswordDto) {
     return this.usersService.forgetPassword(res, body);
   }
 
+  @ApiResponse({
+    status: 200,
+    type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    type: AppResponseDto,
+  })
   @ApiBearerAuth('access-token')
   @UseGuards(VerifyAccessTokenGuard)
   @Patch()
-  patchUser(@Res() res, @Body() body: PatchUserDto, @Req() req) {
+  patchUser(@Res() res, @Body() body: QueryPatchUserDto, @Req() req) {
     return this.usersService.patchUser(res, body, req);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: AppResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    type: AppResponseDto,
+  })
+  @Patch('x/change-password')
+  changePassword(
+    @Res() res,
+    @Body() body: QueryUserChangePasswordDto,
+    @Req() req,
+  ) {
+    return this.usersService.changePassword(res, body, req);
   }
 }

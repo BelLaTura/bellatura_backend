@@ -110,6 +110,11 @@ export class SessionsService {
     return res.status(json.statusCode).json(json);
   }
 
+  async isVerify(res: Response) {
+    const json = GetResponse.getOkResponse('Вы авторизованы', {});
+    return res.status(json.statusCode).send(json);
+  }
+
   /**
    * Функция для получения списка сессий по userId и хэшу access токена
    * @param req
